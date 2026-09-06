@@ -1,0 +1,58 @@
+import pytest
+
+import app as app_module
+
+
+@pytest.fixture
+def client():
+    app_module.app.config["TESTING"] = True
+    # Reset in-memory storage before each test so tests don't leak state.
+    app_module.tasks.clear()
+    app_module.next_id = 1
+    with app_module.app.test_client() as client:
+        yield client
+
+
+def test_get_tasks_empty(client):
+    response = client.get("/tasks")
+    assert response.status_code == 200
+    assert response.get_json() == []
+
+
+def test_create_task(client):
+    response = client.post("/tasks", json={"title": "Buy milk"})
+    assert response.status_code == 201
+    data = response.get_json()
+    assert data["id"] == 1
+    assert data["title"] == "Buy milk"
+    assert data["done"] is False
+
+
+def test_created_task_appears_in_list(client):
+    client.post("/tasks", json={"title": "Buy milk"})
+    client.post("/tasks", json={"title": "Walk the dog"})
+
+    response = client.get("/tasks")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 2
+    assert data[0]["title"] == "Buy milk"
+    assert data[1]["title"] == "Walk the dog"
+
+
+def test_create_task_missing_title(client):
+    response = client.post("/tasks", json={})
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_create_task_blank_title(client):
+    response = client.post("/tasks", json={"title": "   "})
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_create_task_no_body(client):
+    response = client.post("/tasks")
+    assert response.status_code == 400
+    assert "error" in response.get_json()
