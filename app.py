@@ -40,16 +40,5 @@ def complete_task(task_id):
     return jsonify(task), 200
 
 
-@app.route("/tasks/<int:task_id>", methods=["DELETE"])
-def delete_task(task_id):
-    task = next((t for t in tasks if t["id"] == task_id), None)
-
-    if task is None:
-        return jsonify({"error": f"task {task_id} not found"}), 404
-
-    tasks.remove(task)
-    return "", 204
-
-
 if __name__ == "__main__":
     app.run(debug=True)
