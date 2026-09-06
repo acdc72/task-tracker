@@ -29,5 +29,16 @@ def create_task():
     return jsonify(task), 201
 
 
+@app.route("/tasks/<int:task_id>/complete", methods=["PATCH"])
+def complete_task(task_id):
+    task = next((t for t in tasks if t["id"] == task_id), None)
+
+    if task is None:
+        return jsonify({"error": "task not found"}), 404
+
+    task["done"] = True
+    return jsonify(task), 200
+
+
 if __name__ == "__main__":
     app.run(debug=True)
