@@ -56,3 +56,23 @@ def test_create_task_no_body(client):
     response = client.post("/tasks")
     assert response.status_code == 400
     assert "error" in response.get_json()
+
+
+def test_complete_task(client):
+    create_response = client.post("/tasks", json={"title": "Buy milk"})
+    task_id = create_response.get_json()["id"]
+
+    response = client.patch(f"/tasks/{task_id}/complete")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["id"] == task_id
+    assert data["done"] is True
+
+    list_response = client.get("/tasks")
+    assert list_response.get_json()[0]["done"] is True
+
+
+def test_complete_task_not_found(client):
+    response = client.patch("/tasks/999/complete")
+    assert response.status_code == 404
+    assert "error" in response.get_json()
