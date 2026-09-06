@@ -34,7 +34,7 @@ def complete_task(task_id):
     task = next((t for t in tasks if t["id"] == task_id), None)
 
     if task is None:
-        return jsonify({"error": "task not found"}), 404
+        return jsonify({"error": f"task {task_id} not found"}), 404
 
     task["done"] = True
     return jsonify(task), 200

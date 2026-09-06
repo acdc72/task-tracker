@@ -75,4 +75,4 @@ def test_complete_task(client):
 def test_complete_task_not_found(client):
     response = client.patch("/tasks/999/complete")
     assert response.status_code == 404
-    assert "error" in response.get_json()
+    assert response.get_json()["error"] == "task 999 not found"
