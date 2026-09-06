@@ -76,3 +76,21 @@ def test_complete_task_not_found(client):
     response = client.patch("/tasks/999/complete")
     assert response.status_code == 404
     assert response.get_json()["error"] == "task 999 not found"
+
+
+def test_delete_task(client):
+    create_response = client.post("/tasks", json={"title": "Buy milk"})
+    task_id = create_response.get_json()["id"]
+
+    response = client.delete(f"/tasks/{task_id}")
+    assert response.status_code == 204
+    assert response.data == b""
+
+    list_response = client.get("/tasks")
+    assert list_response.get_json() == []
+
+
+def test_delete_task_not_found(client):
+    response = client.delete("/tasks/999")
+    assert response.status_code == 404
+    assert response.get_json()["error"] == "task 999 not found"
